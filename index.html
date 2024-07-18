@@ -45,9 +45,11 @@
     <h3 id="by">By Investidor Internacional</h3>
     <div id="start" class="botao" style="margin-top: 20px" onclick="start()">Jogar</div>
     <div id="console" style="margin-top: 20px"></div>
-    <div id="matrix" style="display: none;"></div>
+    <div id="matrix" style="display: block;"></div>
 
     <script>
+
+        document.getElementById("matrix").style.display = 'none'; 
 
         async function start(){
             clearLog();
