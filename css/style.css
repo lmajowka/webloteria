@@ -1,0 +1,141 @@
+* {
+    margin: 0;
+}
+
+body {
+    box-sizing: border-box;
+    overflow: hidden;
+    user-select: none;
+    transition: 1000ms ease-in-out;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 40vh;
+}
+
+h1 {
+    color: #000;
+    margin-bottom: -10rem;
+    font-style: normal;
+    font-size: 36px;
+}
+
+p {
+    color: #000;
+    font-size: 16px;
+    margin: 0 0 20px;
+}
+
+span {
+    color: #000;
+    user-select: none;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+#console {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 16px;
+    width: 512px;
+    height: 128px;
+    background-color: #FCBF49;
+    border: 1px solid #000000;
+    box-shadow: 0px 2px 0px #000000;
+    border-radius: 8px;
+    margin: 20px 10px;
+    user-select: text;
+}
+
+.button {
+    color: #242424;
+    background-color: #04AA6D;
+    text-align: center;
+    box-shadow: 0px 2px 0px #000000;
+    border-radius: 8px;
+    margin: 10px;
+    padding: 20px;
+    width: 184px;
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.button.option {
+    background-color: #457B9D;
+    transition: 0.5s;
+}
+
+.button.restart {
+    background-color: #BC4749;
+    transition: 0.5s;
+}
+
+.button.repeat {
+    background-color: #F6BD60;
+    transition: 0.5s;
+}
+
+.button.theme {
+    background-color: #8b8787;
+    transition: 0.5s;
+}
+
+.button.egg {
+    background-color: #FB6F92;
+    transition: 0.5s;
+}
+
+.button:hover {
+    background-color: #41b68b;
+    transition: 0.5s;
+}
+
+.button.option:hover {
+    background-color: #5390b6;
+    transition: 0.5s;
+}
+
+.button.restart:hover {
+    background-color: #cc6668;
+    transition: 0.5s;
+}
+
+.button.repeat:hover {
+    background-color: #f3c883;
+    transition: 0.5s;
+}
+
+.button.theme:hover {
+    background-color: #979595;
+    transition: 0.5s;
+}
+
+.button.egg:hover {
+    background-color: #f085a0;
+    transition: 0.5s;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 65vh;
+    padding: 10px 20px;
+    text-align: center;
+    font-style: italic;
+}

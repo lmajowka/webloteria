@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Address from Private Key</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        function start() {
+            window.location.href = 'play.html'
+        }
+
+        function options() {
+            window.location.href = 'options.html'
+        }
+
+        function restart() {
+            window.alert('Você é muito foda!')
+        }
+
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Web Loteria <span class="auto-type"></span></h1>
+    </header>
+    <section>
+        <div class="container">
+            <div class="button" onclick="start()">Jogar</div>
+            <div class="button option" onclick="options()">Opções</div>
+            <div class="button restart" onclick="restart()">Restart</div>
+            <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+            <script>
+                var typed = new Typed(".auto-type", {
+                strings: ["Crypto", "Bitcoin", "Puzzle"],
+                typeSpeed: 150,
+                backSpeed: 150,
+                loop: true
+            })
+            </script>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; Investidor Internacional</p>
+    </footer>
+</body>
+</html>
