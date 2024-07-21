@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitcoin Address from Private Key</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
-        function start() {
+        function play() {
             window.location.href = 'play.html'
         }
 
@@ -15,7 +16,7 @@
         }
 
         function restart() {
-            window.alert('Você é muito foda!')
+            window.alert('Em breve! Como a maioria das funções deste site skkskksk')
         }
 
     </script>
@@ -26,13 +27,12 @@
     </header>
     <section>
         <div class="container">
-            <div class="button" onclick="start()">Jogar</div>
-            <div class="button option" onclick="options()">Opções</div>
-            <div class="button restart" onclick="restart()">Restart</div>
-            <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+            <button class="button" onclick="play()">Jogar</button>
+            <button class="button option" onclick="options()">Opções</button>
+            <button class="button restart" onclick="restart()">Restart</button>
             <script>
                 var typed = new Typed(".auto-type", {
-                strings: ["Crypto", "Bitcoin", "Puzzle"],
+                strings: ["Code", "Bitcoin", "Puzzle"],
                 typeSpeed: 150,
                 backSpeed: 150,
                 loop: true
