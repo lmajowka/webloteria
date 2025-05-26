@@ -64,45 +64,101 @@
             document.getElementById('console').innerHTML = '';
         }
 
-        function loop(){
-            // Carteira 20
-            // let privateKeyInt = generateRandomNumber(0xc0000,0xe0000);
-            // Carteira 65
-             //let privateKeyInt = generateRandomNumber(0x1a838b13505b20000,0x1a838b13505b30000);
-            // Carteira 66
-            // let privateKeyInt = generateRandomNumber(0x20000000000000000,0x3ffffffffffffffff);
-            // Carteira 67
-            // let privateKeyInt = generateRandomNumber(0x40000000000000000,0x7ffffffffffffffff);
-            // Carteira 68
-            // let privateKeyInt = generateRandomNumber(0x80000000000000000,0xbfffffffffffffff);
-            // Carteira 69
-            let privateKeyInt = generateRandomNumber(0x100000000000000000,0x1fffffffffffffffff);
-            console.log('chave de inicio: ', privateKeyInt.toString(16));
-            for (i=0;i<50000;i++){
-                const address = generateAddress(privateKeyInt.toString(16));
-                // console.log(privateKeyInt.toString(16), address)
-                // Carteira 20
-                //if (address == '1HsMJxNiV7TLxmoF6uJNkydxPFDog4NQum'){
-                // Carteira 65
-                //if (address == '18ZMbwUFLMHoZBbfpCjUJQTCMCbktshgpe'){
-                // Carteira 66
-                //if (address == '13zb1hQbWVsc2S7ZTZnP2G4undNNpdh5so'){
-                // Carteira 67
-                // if (address == '1BY8GQbnueYofwSuFAT3USAhGjPrkxDdW9'){
-                // Carteira 68
-                // if (address == '1MVDYgVaSN6iKKEsbzRUAYFrYJadLYZvvZ'){
-                if (address == '19vkiEajfhuZ8bs8Zu2jgmC6oqZbWqhxhG'){
-                    document.getElementById("matrix").style.display = 'none';    
-                    log('Achei: ' +  privateKeyInt.toString(16))
-                    return; // Stop the loop
-
+        function loop() {
+            try {
+                // Define wallets to search for - easier to manage than comments
+                const wallets = {
+                    '20': {
+                        address: '1HsMJxNiV7TLxmoF6uJNkydxPFDog4NQum',
+                        range: [0xc0000, 0xe0000]
+                    },
+                    '65': {
+                        address: '18ZMbwUFLMHoZBbfpCjUJQTCMCbktshgpe',
+                        range: [0x1a838b13505b20000n, 0x1a838b13505b30000n]
+                    },
+                    '66': {
+                        address: '13zb1hQbWVsc2S7ZTZnP2G4undNNpdh5so',
+                        range: [0x20000000000000000n, 0x3fffffffffffffffn]
+                    },
+                    '67': {
+                        address: '1BY8GQbnueYofwSuFAT3USAhGjPrkxDdW9',
+                        range: [0x40000000000000000n, 0x7fffffffffffffffn]
+                    },
+                    '68': {
+                        address: '1MVDYgVaSN6iKKEsbzRUAYFrYJadLYZvvZ',
+                        range: [0x80000000000000000n, 0xbfffffffffffffffn]
+                    },
+                    '69': {
+                        address: '19vkiEajfhuZ8bs8Zu2jgmC6oqZbWqhxhG',
+                        range: [0x100000000000000000n, 0x1fffffffffffffffn]
+                    }
+                };
+                
+                // Select which wallet to search (using wallet 69 by default)
+                const selectedWallet = '69'; 
+                const targetAddress = wallets[selectedWallet].address;
+                let privateKeyInt = generateRandomNumber(...wallets[selectedWallet].range);
+                
+                log(`Iniciando busca para carteira ${selectedWallet}`);
+                log(`Endereco alvo: ${targetAddress}`);
+                log(`Chave inicial: ${privateKeyInt.toString(16)}`);
+                
+                const batchSize = 1000; // Process in smaller batches for UI updates
+                const totalAttempts = 50000;
+                let attemptsCompleted = 0;
+                
+                // Use requestAnimationFrame to avoid blocking the UI
+                function processNextBatch() {
+                    const startTime = performance.now();
+                    const batchEnd = Math.min(attemptsCompleted + batchSize, totalAttempts);
+                    
+                    for (let i = 0; i < batchSize && attemptsCompleted < totalAttempts; i++) {
+                        const address = generateAddress(privateKeyInt.toString(16));
+                        
+                        if (address === targetAddress) {
+                            document.getElementById("matrix").style.display = 'none';
+                            log(`<span style="color: green; font-weight: bold">ENCONTRADO! Chave privada: ${privateKeyInt.toString(16)}</span>`);
+                            document.getElementById("start").style.display = '';
+                            return; // Exit on success
+                        }
+                        
+                        privateKeyInt++;
+                        attemptsCompleted++;
+                    }
+                    
+                    // Update progress
+                    const progress = Math.floor((attemptsCompleted / totalAttempts) * 100);
+                    const timeElapsed = performance.now() - startTime;
+                    const keysPerSecond = Math.round(batchSize / (timeElapsed / 1000));
+                    
+                    if (attemptsCompleted % (batchSize * 5) === 0) {
+                        log(`Progresso: ${progress}% (${attemptsCompleted.toLocaleString()} de ${totalAttempts.toLocaleString()} tentativas)`);
+                        log(`Velocidade: ~${keysPerSecond.toLocaleString()} chaves/segundo`);
+                        log(`Última chave testada: ${privateKeyInt.toString(16)}`);
+                    }
+                    
+                    if (attemptsCompleted < totalAttempts) {
+                        // Continue with next batch
+                        setTimeout(() => requestAnimationFrame(processNextBatch), 0);
+                    } else {
+                        // Completed all attempts without finding a match
+                        document.getElementById("matrix").style.display = 'none';
+                        log('<span style="color: orange">Busca concluída sem sucesso :(</span>');
+                        log('Não desista, tente novamente quando quiser!');
+                        log(`Última chave testada: ${privateKeyInt.toString(16)}`);
+                        document.getElementById("start").style.display = '';
+                    }
                 }
-                privateKeyInt++;
+                
+                // Start the process
+                processNextBatch();
+                
+            } catch (error) {
+                console.error('Erro durante a execução:', error);
+                log(`<span style="color: red">Erro: ${error.message}</span>`);
+                document.getElementById("matrix").style.display = 'none';
+                document.getElementById("start").style.display = '';
             }
-            log('Nao encontrei nada :( nao desista, tente novamente quando quiser de graca \n')
-            log('Ultima chave checada: ' + privateKeyInt.toString(16))
-            document.getElementById("matrix").style.display = 'none'; 
-            document.getElementById("start").style.display = '';       
         }
 
         function log(message){
