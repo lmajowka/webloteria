@@ -58,8 +58,6 @@
     
     <div id="start" class="botao" style="margin-top: 20px" onclick="start()">Jogar</div>
     <div id="console" style="margin-top: 20px"></div>
-    <div id="matrix" style="display: none;"></div>
-
     <script>
 
         async function start(){
@@ -71,8 +69,7 @@
         }
 
         function removeButton(){
-            document.getElementById("start").style.display = 'none';    
-            document.getElementById("matrix").style.display = '';            
+            document.getElementById("start").style.display = 'none';             
         }
 
         function clearLog(){
@@ -131,7 +128,6 @@
                         const address = generateAddress(privateKeyInt.toString(16));
                         
                         if (address === targetAddress) {
-                            document.getElementById("matrix").style.display = 'none';
                             log(`<span style="color: green; font-weight: bold">ENCONTRADO! Chave privada: ${privateKeyInt.toString(16)}</span>`);
                             document.getElementById("start").style.display = '';
                             return; // Exit on success
@@ -171,7 +167,6 @@
             } catch (error) {
                 console.error('Erro durante a execução:', error);
                 log(`<span style="color: red">Erro: ${error.message}</span>`);
-                document.getElementById("matrix").style.display = 'none';
                 document.getElementById("start").style.display = '';
             }
         }
