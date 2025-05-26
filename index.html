@@ -271,6 +271,7 @@
     </div>
     
     <div id="start" class="botao" style="margin-top: 20px" onclick="start()">Jogar</div>
+    <div id="play-again" class="botao" style="margin-top: 20px; display: none;" onclick="start()">Jogar Novamente</div>
     <div id="console" style="margin-top: 20px"></div>
     <script>
 
@@ -348,7 +349,13 @@
                             log(`<span style="color: green; font-weight: bold">ENCONTRADO! Chave privada: ${privateKeyInt.toString(16)}</span>`);
                             const startBtn = document.getElementById("start");
                             if (startBtn) {
-                                startBtn.style.display = '';
+                                startBtn.style.display = 'none';
+                            }
+                            
+                            // Show play again button
+                            const playAgainBtn = document.getElementById("play-again");
+                            if (playAgainBtn) {
+                                playAgainBtn.style.display = '';
                             }
                             return; // Exit on success
                         }
@@ -411,6 +418,13 @@
                         if (startBtn) {
                             startBtn.innerHTML = 'Jogar';
                             startBtn.disabled = false;
+                            startBtn.style.display = 'none';
+                        }
+                        
+                        // Show play again button
+                        const playAgainBtn = document.getElementById("play-again");
+                        if (playAgainBtn) {
+                            playAgainBtn.style.display = '';
                         }
                     }
                 }
@@ -426,6 +440,13 @@
                 if (startBtn) {
                     startBtn.innerHTML = 'Jogar';
                     startBtn.disabled = false;
+                    startBtn.style.display = '';
+                }
+                
+                // Hide play again button
+                const playAgainBtn = document.getElementById("play-again");
+                if (playAgainBtn) {
+                    playAgainBtn.style.display = 'none';
                 }
                 
                 const progressContainer = document.querySelector('.progress-container');
