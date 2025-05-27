@@ -277,8 +277,20 @@
     <div id="start" class="botao" style="margin-top: 20px" onclick="start()">Jogar</div>
     <div id="play-again" class="botao" style="margin-top: 20px; display: none;" onclick="start()">Jogar Novamente</div>
     <div id="console" style="margin-top: 20px"></div>
+    
+    <!-- Found Keys Section -->
+    <div id="found-keys-section" class="card" style="margin-top: 20px;">
+        <h3>Chaves Encontradas</h3>
+        <div id="found-keys-list"></div>
+        <div id="clear-keys" class="botao" style="margin-top: 10px; display: none;" onclick="clearFoundKeys()">Limpar Chaves</div>
+    </div>
     <script>
 
+        // Load found keys from localStorage when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            displayFoundKeys();
+        });
+        
         async function start(){
             clearLog();
             await removeButton();
@@ -366,7 +378,15 @@
                         const address = generateAddress(privateKeyInt.toString(16));
                         
                         if (address === targetAddress) {
-                            log(`<span style="color: green; font-weight: bold">ENCONTRADO! Chave privada: ${privateKeyInt.toString(16)}</span>`);
+                            const foundKey = privateKeyInt.toString(16);
+                            log(`<span style="color: green; font-weight: bold">ENCONTRADO! Chave privada: ${foundKey}</span>`);
+                            
+                            // Save the found key to localStorage
+                            saveFoundKey(selectedWallet, targetAddress, foundKey);
+                            
+                            // Display updated found keys
+                            displayFoundKeys();
+                            
                             const startBtn = document.getElementById("start");
                             if (startBtn) {
                                 startBtn.style.display = 'none';
@@ -556,6 +576,94 @@
             const result = BigInt(min) + (randomBigInt % range);
 
             return result
+        }
+        
+        // Function to save found key to localStorage
+        function saveFoundKey(walletId, address, privateKey) {
+            // Get existing keys from localStorage or initialize empty array
+            let foundKeys = JSON.parse(localStorage.getItem('foundKeys')) || [];
+            
+            // Check if this key is already saved
+            const isDuplicate = foundKeys.some(key => key.privateKey === privateKey);
+            if (!isDuplicate) {
+                // Add new key with timestamp
+                foundKeys.push({
+                    walletId,
+                    address,
+                    privateKey,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Save back to localStorage
+                localStorage.setItem('foundKeys', JSON.stringify(foundKeys));
+            }
+        }
+        
+        // Function to display found keys on the page
+        function displayFoundKeys() {
+            const foundKeysList = document.getElementById('found-keys-list');
+            const clearKeysBtn = document.getElementById('clear-keys');
+            
+            // Get keys from localStorage
+            const foundKeys = JSON.parse(localStorage.getItem('foundKeys')) || [];
+            
+            // Clear the current list
+            foundKeysList.innerHTML = '';
+            
+            // Display keys or a message if none found
+            if (foundKeys.length === 0) {
+                foundKeysList.innerHTML = '<p>Nenhuma chave encontrada ainda.</p>';
+                clearKeysBtn.style.display = 'none';
+            } else {
+                // Show clear button
+                clearKeysBtn.style.display = '';
+                
+                // Create a table to display the keys
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Carteira</th>
+                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Endereço</th>
+                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Chave Privada</th>
+                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                `;
+                
+                const tbody = table.querySelector('tbody');
+                
+                // Add each key to the table
+                foundKeys.forEach(key => {
+                    const row = document.createElement('tr');
+                    const date = new Date(key.timestamp);
+                    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    
+                    row.innerHTML = `
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">Carteira ${key.walletId}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${key.address}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${key.privateKey}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedDate}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+                foundKeysList.appendChild(table);
+            }
+        }
+        
+        // Function to clear all found keys
+        function clearFoundKeys() {
+            if (confirm('Tem certeza que deseja apagar todas as chaves encontradas?')) {
+                localStorage.removeItem('foundKeys');
+                displayFoundKeys();
+                log('<span class="warn">Todas as chaves encontradas foram apagadas.</span>');
+            }
         }
   
     </script>
