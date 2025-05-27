@@ -276,6 +276,7 @@
     
     <div id="start" class="botao" style="margin-top: 20px" onclick="start()">Jogar</div>
     <div id="play-again" class="botao" style="margin-top: 20px; display: none;" onclick="start()">Jogar Novamente</div>
+    <div id="stop-btn" class="botao" style="margin-top: 20px; display: none;">Parar</div>
     <div id="console" style="margin-top: 20px"></div>
     
     <!-- Found Keys Section -->
@@ -365,16 +366,24 @@
                 log(`Chave inicial: ${privateKeyInt.toString(16)}`);
                 
                 const batchSize = 1000; // Process in smaller batches for UI updates
-                const totalAttempts = 50000;
                 let attemptsCompleted = 0;
-                let shouldStop = false; // Add missing variable declaration
+                let shouldStop = false; // Flag to stop processing when user clicks stop button
+                
+                // Show stop button
+                const stopBtn = document.getElementById('stop-btn');
+                if (stopBtn) {
+                    stopBtn.style.display = '';
+                    stopBtn.onclick = function() {
+                        shouldStop = true;
+                        log('<span class="warn">Parando o processamento...</span>');
+                    };
+                }
                 
                 // Use requestAnimationFrame to avoid blocking the UI
                 function processNextBatch() {
                     const startTime = performance.now();
-                    const batchEnd = Math.min(attemptsCompleted + batchSize, totalAttempts);
                     
-                    for (let i = 0; i < batchSize && attemptsCompleted < totalAttempts; i++) {
+                    for (let i = 0; i < batchSize; i++) {
                         const address = generateAddress(privateKeyInt.toString(16));
                         
                         if (address === targetAddress) {
@@ -404,39 +413,41 @@
                         attemptsCompleted++;
                     }
                     
-                    // Update progress
-                    const progress = Math.floor((attemptsCompleted / totalAttempts) * 100);
+                    // Update stats
                     const timeElapsed = performance.now() - startTime;
                     const keysPerSecond = Math.round(batchSize / (timeElapsed / 1000));
                     
                     if (attemptsCompleted % (batchSize * 5) === 0) {
-                        log(`Progresso: ${progress}% (${attemptsCompleted.toLocaleString()} de ${totalAttempts.toLocaleString()} tentativas)`);
+                        log(`Tentativas realizadas: ${attemptsCompleted.toLocaleString()}`);
                         log(`Velocidade: ~${keysPerSecond.toLocaleString()} chaves/segundo`);
                         log(`Última chave testada: ${privateKeyInt.toString(16)}`);
                     }
                     
-                    // Update progress bar and stats
-                    const progressPercent = (attemptsCompleted / totalAttempts) * 100;
-                    const progressBar = document.querySelector('.progress-bar');
-                    if (progressBar) {
-                        progressBar.style.width = `${progressPercent}%`;
-                    }
-                    
+                    // Update stats only
                     const keysGenerated = document.getElementById('keys-generated');
                     if (keysGenerated) {
                         keysGenerated.textContent = attemptsCompleted.toLocaleString();
                     }
                     
+                    // Update progress display without percentage
                     const progressPercDisplay = document.getElementById('progress-percent');
                     if (progressPercDisplay) {
-                        progressPercDisplay.textContent = `${progressPercent.toFixed(2)}%`;
+                        progressPercDisplay.textContent = `${attemptsCompleted.toLocaleString()} tentativas`;
                     }
                     
-                    if (attemptsCompleted < totalAttempts && !shouldStop) {
-                        // Continue with next batch
+                    // Keep progress bar animated to show activity
+                    const progressBar = document.querySelector('.progress-bar');
+                    if (progressBar) {
+                        // Create a pulsing effect by cycling between 15% and 85%
+                        const pulsePosition = 15 + (attemptsCompleted % 10) * 7; // Values between 15% and 85%
+                        progressBar.style.width = `${pulsePosition}%`;
+                    }
+                    
+                    if (!shouldStop) {
+                        // Continue with next batch indefinitely until stopped or key found
                         setTimeout(() => requestAnimationFrame(processNextBatch), 0);
                     } else {
-                        // Completed all attempts without finding a match or stopped
+                        // User stopped the process
                         clearInterval(matrixInterval);
                         
                         const progressContainer = document.querySelector('.progress-container');
@@ -449,9 +460,11 @@
                             stopBtn.style.display = 'none';
                         }
                         
-                        log('<span class="warn">Busca concluída sem sucesso :(</span>');
+                        log('<span class="warn">Busca interrompida pelo usuário</span>');
                         log('<span class="success">Não desista, tente novamente quando quiser!</span>');
+                        log(`Tentativas realizadas: ${attemptsCompleted.toLocaleString()}`);
                         log(`Última chave testada: ${privateKeyInt.toString(16)}`);
+
                         
                         // Reset start button
                         const startBtn = document.getElementById("start");
