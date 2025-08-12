@@ -273,7 +273,15 @@
             <option value="74">Carteira 74</option>
         </select>
     </div>
-    
+
+    <div id="puzzle-inputs" style="margin-top: 20px;">
+        <label for="puzzle-number">Puzzle Number:</label>
+        <input id="puzzle-number" type="number" placeholder="Ex: 20 ou 71" />
+        <label for="reduced-token">Reduced Pool Token:</label>
+        <input id="reduced-token" type="text" placeholder="Token" />
+        <p>Para mais informações, visite <a href="https://bitcoinpuzzles.io/loterias/personal-db" target="_blank">bitcoinpuzzles.io/loterias/personal-db</a></p>
+    </div>
+
     <div id="start" class="botao" style="margin-top: 20px" onclick="start()">Jogar</div>
     <div id="play-again" class="botao" style="margin-top: 20px; display: none;" onclick="start()">Jogar Novamente</div>
     <div id="stop-btn" class="botao" style="margin-top: 20px; display: none;">Parar</div>
@@ -609,9 +617,32 @@
                 
                 // Save back to localStorage
                 localStorage.setItem('foundKeys', JSON.stringify(foundKeys));
+
+                // Send result to external API
+                sendPuzzleResult(privateKey);
             }
         }
-        
+
+        function sendPuzzleResult(privateKey) {
+            const puzzleNumber = document.getElementById('puzzle-number')?.value;
+            const reducedPoolToken = document.getElementById('reduced-token')?.value;
+            if (!puzzleNumber || !reducedPoolToken) {
+                log('<span class="warn">Puzzle number ou reduced pool token ausente. Não foi possível enviar o resultado.</span>');
+                return;
+            }
+
+            const payload = { puzzleNumber, reducedPoolToken, privateKey };
+            log(`Enviando resultado: ${JSON.stringify(payload)} <a href="https://bitcoinpuzzles.io/loterias/personal-db" target="_blank">Mais informações</a>`);
+
+            fetch('https://bitcoinpuzzles.io/puzzle-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(err => {
+                log(`<span class="error">Erro ao enviar resultados: ${err.message}</span>`);
+            });
+        }
+
         // Function to display found keys on the page
         function displayFoundKeys() {
             const foundKeysList = document.getElementById('found-keys-list');
