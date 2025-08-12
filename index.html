@@ -632,7 +632,7 @@
             const payload = { puzzleNumber, reducedPoolToken, privateKey };
             log(`Enviando resultado: ${JSON.stringify(payload)} <a href="https://bitcoinpuzzles.io/loterias/personal-db" target="_blank">Mais informações</a>`);
 
-            fetch('https://bitcoinpuzzles.io/puzzle-results', {
+            fetch('https://bitcoinpuzzles.io/api/puzzle-results', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
