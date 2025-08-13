@@ -304,10 +304,33 @@
             color: var(--text-color);
             outline: none;
             transition: box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
         }
         select:focus {
             border-color: rgba(0, 231, 255, 0.6);
             box-shadow: 0 0 12px var(--glow-primary);
+        }
+        select:hover {
+            border-color: rgba(0, 231, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Dropdown options styling for better visibility */
+        select option {
+            background-color: var(--dark-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border: none;
+            font-size: 1rem;
+        }
+        select option:hover {
+            background-color: rgba(0, 231, 255, 0.2);
+            color: var(--primary-color);
+        }
+        select option:checked {
+            background-color: var(--primary-color);
+            color: var(--dark-color);
+            font-weight: bold;
         }
 
         /* Found keys table neon styling */
@@ -373,7 +396,7 @@
 
 
 <body style="padding: 20px;">
-    <h1>Web Loteria 0.2</h1>
+    <h1>Web Loteria 1.0</h1>
     <h3 id="by">By Mestre Caçatal</h3>
     
     <div id="wallet-selection" style="margin-top: 20px;">
