@@ -396,7 +396,7 @@
 
 
 <body style="padding: 20px;">
-    <h1>Web Loteria 1.0</h1>
+    <h1>Web Loteria 1.2</h1>
     <h3 id="by">By Mestre Caçatal</h3>
     
     <div id="wallet-selection" style="margin-top: 20px;">
@@ -433,6 +433,29 @@
         <div id="clear-keys" class="botao" style="margin-top: 10px; display: none;" onclick="clearFoundKeys()">Limpar Chaves</div>
     </div>
     <script>
+        // Pre-initialize EC curve once (reused for all key operations)
+        const ec = new elliptic.ec('secp256k1');
+
+        // Decode a Base58Check address to extract its hash160 (skip Base58 in hot loop)
+        function addressToHash160(address) {
+            const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let num = BigInt(0);
+            for (let i = 0; i < address.length; i++) {
+                num = num * BigInt(58) + BigInt(alphabet.indexOf(address[i]));
+            }
+            let hex = num.toString(16);
+            while (hex.length < 50) hex = '0' + hex;
+            // bytes 1-20: skip version byte (2 chars), ignore checksum (last 8 chars)
+            return hex.substring(2, 42);
+        }
+
+        // Fast path: only compute hash160, skip checksum + Base58 encoding
+        function generateHash160(privateKeyHex) {
+            const keyPair = ec.keyFromPrivate(privateKeyHex, 'hex');
+            const publicKey = keyPair.getPublic(true, 'hex');
+            const sha256Hash = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(publicKey));
+            return CryptoJS.RIPEMD160(sha256Hash).toString();
+        }
 
         // Load found keys from localStorage when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -506,13 +529,14 @@
                 // Get selected wallet from dropdown
                 const selectedWallet = document.getElementById('wallet-dropdown').value;
                 const targetAddress = wallets[selectedWallet].address;
+                const targetHash160 = addressToHash160(targetAddress);
                 let privateKeyInt = generateRandomNumber(...wallets[selectedWallet].range);
-                
+
                 log(`Iniciando busca para carteira ${selectedWallet}`);
                 log(`Endereco alvo: ${targetAddress}`);
                 log(`Chave inicial: ${privateKeyInt.toString(16)}`);
-                
-                const batchSize = 1000; // Process in smaller batches for UI updates
+
+                const batchSize = 5000;
                 let attemptsCompleted = 0;
                 let shouldStop = false; // Flag to stop processing when user clicks stop button
                 
@@ -526,14 +550,18 @@
                     };
                 }
                 
-                // Use requestAnimationFrame to avoid blocking the UI
+                // Cache DOM elements outside the batch loop
+                const keysGeneratedEl = document.getElementById('keys-generated');
+                const progressPercEl = document.getElementById('progress-percent');
+                const progressBarEl = document.querySelector('.progress-bar');
+
                 function processNextBatch() {
                     const startTime = performance.now();
-                    
+
                     for (let i = 0; i < batchSize; i++) {
-                        const address = generateAddress(privateKeyInt.toString(16));
-                        
-                        if (address === targetAddress) {
+                        const hash160 = generateHash160(privateKeyInt.toString(16));
+
+                        if (hash160 === targetHash160) {
                             const foundKey = privateKeyInt.toString(16);
                             log(`<span style="color: green; font-weight: bold">ENCONTRADO! Chave privada: ${foundKey}</span>`);
                             
@@ -570,29 +598,21 @@
                         log(`Última chave testada: ${privateKeyInt.toString(16)}`);
                     }
                     
-                    // Update stats only
-                    const keysGenerated = document.getElementById('keys-generated');
-                    if (keysGenerated) {
-                        keysGenerated.textContent = attemptsCompleted.toLocaleString();
+                    if (keysGeneratedEl) {
+                        keysGeneratedEl.textContent = attemptsCompleted.toLocaleString();
                     }
-                    
-                    // Update progress display without percentage
-                    const progressPercDisplay = document.getElementById('progress-percent');
-                    if (progressPercDisplay) {
-                        progressPercDisplay.textContent = `${attemptsCompleted.toLocaleString()} tentativas`;
+
+                    if (progressPercEl) {
+                        progressPercEl.textContent = `${attemptsCompleted.toLocaleString()} tentativas`;
                     }
-                    
-                    // Keep progress bar animated to show activity
-                    const progressBar = document.querySelector('.progress-bar');
-                    if (progressBar) {
-                        // Create a pulsing effect by cycling between 15% and 85%
-                        const pulsePosition = 15 + (attemptsCompleted % 10) * 7; // Values between 15% and 85%
-                        progressBar.style.width = `${pulsePosition}%`;
+
+                    if (progressBarEl) {
+                        const pulsePosition = 15 + (attemptsCompleted % 10) * 7;
+                        progressBarEl.style.width = `${pulsePosition}%`;
                     }
                     
                     if (!shouldStop) {
-                        // Continue with next batch indefinitely until stopped or key found
-                        setTimeout(() => requestAnimationFrame(processNextBatch), 0);
+                        setTimeout(processNextBatch, 0);
                     } else {
                         // User stopped the process
                         clearInterval(matrixInterval);
@@ -672,13 +692,8 @@
             }
         }
 
-        function generateAddress(privateKeyInt) {
-            const privateKey = BigInt('0x' + privateKeyInt);
-            
-            // Use elliptic library to get the public key
-            const EC = elliptic.ec;
-            const ec = new EC('secp256k1');
-            const keyPair = ec.keyFromPrivate(privateKeyInt, 'hex');
+        function generateAddress(privateKeyHex) {
+            const keyPair = ec.keyFromPrivate(privateKeyHex, 'hex');
             const publicKey = keyPair.getPublic(true, 'hex'); // Compressed public key
 
             // Hash the public key with SHA-256
